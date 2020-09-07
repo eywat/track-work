@@ -2,10 +2,11 @@
 A very simple work tracking cli utility
 
 ## Requirements 
-Rust's cargo toolchain
+Rust's ```cargo``` build tool 
 
 ## Install
-1. Clone repository
-2. Run ```cargo build --release```
-3. The binary is located under ```./target/release/track-work```
-4. (optional) set the env ```TRACK_WORK_FILE``` to access the intended storage file w/o needing to specify it via a cli arg
+1. Run ```cargo install --git https://github.com/eywat/track-work```
+2. (optional) set the env ```TRACK_WORK_FILE``` to access the intended storage file w/o needing to specify it via a cli arg
+
+## Usage 
+If installed as described above, a executable called ```track-work``` should be added to cargo's default install directory. See [cargo install docs](https://doc.rust-lang.org/cargo/commands/cargo-install.html).

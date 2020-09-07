@@ -225,6 +225,9 @@ fn get_month_data(
         12 - (delta - current.month())
     };
     let year = current.year() - overflow as i32;
+    if debug() {
+        println!("Fetching data for {}-{}", year, month);
+    }
     Box::new(data.filter(move |m| m.start.month() == month && m.start.year() == year))
 }
 
@@ -267,7 +270,7 @@ fn info(path: &PathBuf, info: &Option<Info>, uncompressed: bool) -> Result<()> {
         let total = entries
             .inspect(|e| {
                 println!(
-                    "{}: {:02}:{:02}",
+                    "{}, {:02}:{:02}",
                     e.0.format("%F"),
                     e.1.whole_hours(),
                     e.1.whole_minutes() % 60
@@ -301,7 +304,7 @@ fn live(path: &PathBuf, objective: String) -> Result<()> {
         }
         Some(_) | None => {
             let start_time = OffsetDateTime::now_local();
-            println!("Tracking work starting now {}", start_time.format("%F %R"));
+            println!("Tracking work starting now ({})", start_time.format("%F %R"));
             start(path, "".into(), false)?;
             start_time
         }
