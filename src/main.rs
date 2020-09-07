@@ -6,8 +6,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use anyhow::{Context, Result, Error};
 use console::Term;
 use crossbeam_channel::{bounded, tick, Receiver, select};
-use csv::{Reader, Writer};
-use serde::{Deserialize, Serialize};
+use csv::{ReaderBuilder, Writer, StringRecord};
 use structopt::StructOpt;
 use time::{OffsetDateTime, Duration, Date};
 
@@ -59,11 +58,9 @@ enum Info {
     All
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug)]
 struct Tracker {
-    #[serde(with = "time::serde::timestamp")]
     start: OffsetDateTime,
-    #[serde(with = "time::serde::timestamp::option")]
     end: Option<OffsetDateTime>,
     objective: String
 }
@@ -93,6 +90,24 @@ impl std::fmt::Display for Tracker {
     }
 }
 
+impl From<StringRecord> for Tracker {
+    fn from(rec: StringRecord) -> Self {
+        let start = rec.get(0)
+            .map(|s| OffsetDateTime::parse(s, "%F %T %z"))
+            .expect("Could not read entry 0 of csv!")
+            .expect("Could not parse start!");
+        let end = rec.get(1)
+            .map(|s| OffsetDateTime::parse(s, "%F %T %z").ok())
+            .unwrap_or(None);
+        let objective = rec.get(2).unwrap_or("").into();
+        Self {
+            start,
+            end,
+            objective
+        }
+    }
+}
+
 fn debug() -> bool {
     DEBUG.load(Ordering::SeqCst)
 }
@@ -101,12 +116,15 @@ fn read(path: &PathBuf) -> Result<Vec<Tracker>> {
     if path.exists() {
         let file = fs::File::open(path)
             .with_context(|| format!("Storage file not found: {}", path.display()))?;
-        let mut rdr = Reader::from_reader(file);
-        let data = rdr.deserialize()
+        let mut rdr = ReaderBuilder::new()
+            .has_headers(true)
+            .from_reader(file);
+        let data = rdr.records()
             .inspect(|data| if debug() {
                     println!("{:?}", data)
                 } else {})
             .filter_map(|d| d.ok())
+            .map(Tracker::from)
             .collect();
         Ok(data)
     } else {
@@ -120,8 +138,13 @@ fn write(path: &PathBuf, data: &[Tracker]) -> Result<()> {
     if debug() {
         println!("{:?}", data);
     }
+    writer.write_record(&["Start", "End", "Objective"])?;
     for entry in data.iter() {
-        writer.serialize(entry)?;
+        writer.write_record(&[
+            entry.start.format("%F %T %z"), 
+            entry.end.map(|e| e.format("%F %T %z"))
+                .unwrap_or_else(|| "".into()), 
+            entry.objective.clone()])?;
     }
     writer.flush()?;
     Ok(())
