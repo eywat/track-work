@@ -10,3 +10,5 @@ Rust's ```cargo``` build tool
 
 ## Usage 
 If installed as described above, a executable called ```track-work``` should be added to cargo's default install directory. See [cargo install docs](https://doc.rust-lang.org/cargo/commands/cargo-install.html).
+
+See ```track-work --help``` for the available commands.
