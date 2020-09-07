@@ -48,7 +48,7 @@ enum Command {
 
 #[derive(Debug, StructOpt)]
 enum Info {
-    /// Show data for <delta> months ago 
+    /// Show data from <delta> months ago 
     Month {
         #[structopt(default_value="0")]
         /// Show data from <delta> months ago
