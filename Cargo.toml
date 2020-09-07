@@ -1,6 +1,6 @@
 [package]
 name = "track-work"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Edward Waterman <edward.waterman@tum.de>"]
 edition = "2018"
 

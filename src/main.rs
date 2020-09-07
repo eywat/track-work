@@ -216,13 +216,14 @@ fn get_month_data(
     delta: u8,
 ) -> Box<dyn Iterator<Item = Tracker>> {
     let current = OffsetDateTime::now_local();
-    let mut overflow = delta / 12;
-    let delta = delta % 12;
-    let month = if let Some(month) = current.month().checked_sub(delta) {
-        month
+    let mut overflow = delta / 12; 
+    let delta = delta % 12 + 1;
+    // TOFIX: this is erroneous, b.c. months go from 1 - 12, but this can be 0 as well
+    let month = if let Some(month) = current.month().checked_sub(delta) { 
+        month + 1
     } else {
         overflow += 1;
-        12 - (delta - current.month())
+        13 - (delta - current.month())
     };
     let year = current.year() - overflow as i32;
     if debug() {
