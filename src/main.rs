@@ -248,12 +248,14 @@ fn info(path: &PathBuf, info: &Option<Info>, uncompressed: bool) -> Result<()> {
     let data = Box::new(read(path)?.into_iter());
     let info = info.as_ref().unwrap_or(&Info::Month { delta: 0 });
     if uncompressed {
-        let entries = match info {
+        let mut entries = match info {
             Info::Month { delta } => get_month_data(data, *delta),
             Info::All => data,
-        };
+        }.collect::<Vec<_>>();
+        entries.sort_by_key(|tracker| tracker.start);
         println!("Date, Start, End, Duration, Objective");
         let total = entries
+            .into_iter()
             .inspect(|e| println!("{}", e))
             .map(|e| e.end.unwrap_or_else(OffsetDateTime::now_local) - e.start)
             .fold(Duration::new(0, 0), |acc, e| acc + e);
@@ -263,12 +265,14 @@ fn info(path: &PathBuf, info: &Option<Info>, uncompressed: bool) -> Result<()> {
             total.whole_minutes() % 60
         );
     } else {
-        let entries = match info {
+        let mut entries = match info {
             Info::Month { delta } => compress(get_month_data(data, *delta)),
             Info::All => compress(data),
-        };
+        }.collect::<Vec<_>>();
+        entries.sort_by_key(|tracker| tracker.0);
         println!("Date, Duration");
         let total = entries
+            .into_iter()
             .inspect(|e| {
                 println!(
                     "{}, {:02}:{:02}",
