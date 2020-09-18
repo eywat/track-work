@@ -298,6 +298,8 @@ fn ctrl_channel() -> Result<Receiver<()>, ctrlc::Error> {
 
 fn live(path: &PathBuf, objective: String) -> Result<()> {
     let data = read(path)?;
+    let term = Term::stdout();
+    term.clear_screen()?;
     let start_time = match data.last() {
         Some(entry) if entry.end.is_none() => {
             println!("Tracking work started at {}", entry.start.format("%F %R"));
@@ -312,7 +314,6 @@ fn live(path: &PathBuf, objective: String) -> Result<()> {
     };
     let ctrl_c_events = ctrl_channel()?;
     let ticks = tick(std::time::Duration::from_secs(1));
-    let term = Term::stdout();
     term.write_line("")?;
     loop {
         select! {
