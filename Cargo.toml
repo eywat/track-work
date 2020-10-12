@@ -1,6 +1,6 @@
 [package]
 name = "track-work"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Edward Waterman <edward.waterman@tum.de>"]
 edition = "2018"
 
@@ -19,3 +19,9 @@ time = "0.2.17"
 name = "track-work"
 test = false
 bench = false
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
